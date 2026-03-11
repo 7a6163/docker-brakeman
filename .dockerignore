@@ -1,0 +1,26 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation (not needed in container)
+*.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.*
+
+# Docker Compose (not needed inside the image)
+docker-compose*.yml
+docker-compose*.yaml

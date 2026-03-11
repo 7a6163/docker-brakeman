@@ -1,0 +1,52 @@
+# GitLab CI configuration for testing Brakeman with reviewdog
+# This is an example configuration for projects using this Docker image
+
+stages:
+  - security
+
+# Example: Run Brakeman with reviewdog on merge requests
+brakeman-review:
+  stage: security
+  image: 7a6163/brakeman:latest
+  script:
+    - run-reviewdog -r gitlab-mr-discussion --token $GITLAB_TOKEN
+  variables:
+    # Use CI job token or create a project access token
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: true
+
+# Example: For private GitLab instances
+brakeman-review-private:
+  stage: security
+  image: 7a6163/brakeman:latest
+  script:
+    - >-
+      run-reviewdog -r gitlab-mr-discussion
+      --gitlab-api $CI_API_V4_URL
+      --token $PRIVATE_GITLAB_TOKEN
+      --fail-on-error
+  variables:
+    # Set PRIVATE_GITLAB_TOKEN in GitLab CI/CD variables
+    PRIVATE_GITLAB_TOKEN: $PRIVATE_GITLAB_TOKEN
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual  # Run manually due to private instance requirements
+
+# Example: Generate reports for all branches
+brakeman-report:
+  stage: security
+  image: 7a6163/brakeman:latest
+  script:
+    - brakeman -o brakeman-report.json -f json --no-exit-on-warn --no-exit-on-error
+    - brakeman -o brakeman-report.html -f html --no-exit-on-warn --no-exit-on-error
+  artifacts:
+    # Note: Brakeman JSON is not in GitLab SAST schema format.
+    # Convert to SARIF first if you need the security dashboard integration.
+    paths:
+      - brakeman-report.html
+      - brakeman-report.json
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"
