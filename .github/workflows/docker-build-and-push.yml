@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 env:
-  BRAKEMAN_VERSION: "8.0.4"
-  REVIEWDOG_VERSION: "v0.20.3"
+  BRAKEMAN_VERSION: "8.0.6"
+  REVIEWDOG_VERSION: "v0.21.2"
 
 jobs:
   build-and-push:

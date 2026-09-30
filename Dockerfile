@@ -1,8 +1,8 @@
 FROM ruby:3-alpine
 
 # Define build arguments for version control
-ARG BRAKEMAN_VERSION=8.0.4
-ARG REVIEWDOG_VERSION=v0.20.3
+ARG BRAKEMAN_VERSION=8.0.6
+ARG REVIEWDOG_VERSION=v0.21.2
 
 # OCI standard labels
 LABEL org.opencontainers.image.source="https://github.com/7a6163/docker-brakeman"

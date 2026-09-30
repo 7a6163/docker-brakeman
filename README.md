@@ -9,8 +9,8 @@ A lightweight Docker image for [Brakeman](https://github.com/presidentbeef/brake
 
 - Based on Ruby 3 Alpine for minimal image size
 - Multi-architecture support (linux/amd64, linux/arm64)
-- Configurable Brakeman version (default: 8.0.4)
-- Configurable reviewdog version (default: v0.20.3)
+- Configurable Brakeman version (default: 8.0.6)
+- Configurable reviewdog version (default: v0.21.2)
 - Uses tini as init system
 - Automated code review integration
 
@@ -112,7 +112,7 @@ docker run --rm -v $(pwd):/app 7a6163/brakeman brakeman -f json | \
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     reporter: github-pr-review
-    brakeman_version: 8.0.4
+    brakeman_version: 8.0.6
 
 # Or using our Docker image directly
 - name: Run Brakeman with reviewdog (Docker)
@@ -164,7 +164,7 @@ The `run-reviewdog` script supports various options:
 ## Tags
 
 - `latest`: Always points to the most recent stable release
-- `vX.Y.Z`: Points to specific versions (e.g., `v8.0.4`)
+- `vX.Y.Z`: Points to specific versions (e.g., `v8.0.6`)
 
 ## Building with Custom Versions
 
