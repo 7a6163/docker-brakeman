@@ -52,11 +52,12 @@ docker run --rm -v $(pwd):/app 7a6163/brakeman brakeman -o report.html
 
 This image includes a convenient wrapper script for reviewdog that supports both GitHub and GitLab (including private instances).
 
-#### Quick Usage with Auto-Detection
+#### Quick Usage
 
 ```bash
-# Auto-detects CI environment and uses appropriate reporter
-docker run --rm -v $(pwd):/app -e GITHUB_TOKEN -e GITLAB_TOKEN 7a6163/brakeman run-reviewdog
+# Defaults to the local reporter (prints results, no API token needed).
+# Pass -r to post to GitHub/GitLab; the reporter is not auto-detected.
+docker run --rm -v $(pwd):/app 7a6163/brakeman run-reviewdog
 ```
 
 #### GitHub Integration
@@ -126,26 +127,21 @@ docker run --rm -v $(pwd):/app 7a6163/brakeman brakeman -f json | \
 brakeman-review:
   stage: test
   image: 7a6163/brakeman
-  script:
-    - run-reviewdog -r gitlab-mr-discussion --token $GITLAB_TOKEN
   variables:
-    GITLAB_TOKEN: $CI_JOB_TOKEN  # or use project access token
-  only:
-    - merge_requests
-
-# For private GitLab instance
-brakeman-review-private:
-  stage: test
-  image: 7a6163/brakeman
+    GIT_DEPTH: 0  # reviewdog needs the MR base commit to compute the diff
   script:
-    - run-reviewdog -r gitlab-mr-discussion 
-        --gitlab-api $CI_API_V4_URL 
-        --token $GITLAB_TOKEN
-  variables:
-    GITLAB_TOKEN: $PRIVATE_GITLAB_TOKEN  # Set in CI/CD variables
-  only:
-    - merge_requests
+    - run-reviewdog -r gitlab-mr-discussion --token "$REVIEWDOG_GITLAB_API_TOKEN"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 ```
+
+`REVIEWDOG_GITLAB_API_TOKEN` must be a Project (or Personal) Access Token with
+the `api` scope and at least the Reporter role, stored as a masked CI/CD variable.
+`CI_JOB_TOKEN` does not have permission to post MR discussions.
+
+Self-managed GitLab works with the same job: `CI_API_V4_URL` is provided by
+GitLab CI and picked up automatically. Use `--gitlab-api URL` only when running
+outside GitLab CI.
 
 #### Available Options
 
@@ -161,7 +157,7 @@ The `run-reviewdog` script supports various options:
 #### Environment Variables
 
 - `REVIEWDOG_GITHUB_API_TOKEN` or `GITHUB_TOKEN`: GitHub access token
-- `REVIEWDOG_GITLAB_API_TOKEN` or `GITLAB_TOKEN`: GitLab access token
+- `REVIEWDOG_GITLAB_API_TOKEN`: GitLab access token (or pass `--token`; `GITLAB_TOKEN` is not read)
 - `CI_API_V4_URL`: GitLab API URL (auto-detected in GitLab CI)
 - `CI_MERGE_REQUEST_IID`: GitLab MR ID (auto-detected in GitLab CI)
 

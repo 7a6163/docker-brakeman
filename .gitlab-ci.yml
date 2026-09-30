@@ -4,35 +4,20 @@
 stages:
   - security
 
-# Example: Run Brakeman with reviewdog on merge requests
+# Example: Run Brakeman with reviewdog on merge requests.
+# Works on gitlab.com and self-managed GitLab (CI_API_V4_URL is set by GitLab CI).
+# REVIEWDOG_GITLAB_API_TOKEN: Project Access Token with `api` scope (Reporter role or
+# higher), stored as a masked CI/CD variable. CI_JOB_TOKEN cannot post MR discussions.
 brakeman-review:
   stage: security
   image: 7a6163/brakeman:latest
-  script:
-    - run-reviewdog -r gitlab-mr-discussion --token $GITLAB_TOKEN
   variables:
-    # Use CI job token or create a project access token
-    GITLAB_TOKEN: $CI_JOB_TOKEN
+    GIT_DEPTH: 0  # reviewdog needs the MR base commit to compute the diff
+  script:
+    - run-reviewdog -r gitlab-mr-discussion --token "$REVIEWDOG_GITLAB_API_TOKEN"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   allow_failure: true
-
-# Example: For private GitLab instances
-brakeman-review-private:
-  stage: security
-  image: 7a6163/brakeman:latest
-  script:
-    - >-
-      run-reviewdog -r gitlab-mr-discussion
-      --gitlab-api $CI_API_V4_URL
-      --token $PRIVATE_GITLAB_TOKEN
-      --fail-on-error
-  variables:
-    # Set PRIVATE_GITLAB_TOKEN in GitLab CI/CD variables
-    PRIVATE_GITLAB_TOKEN: $PRIVATE_GITLAB_TOKEN
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: manual  # Run manually due to private instance requirements
 
 # Example: Generate reports for all branches
 brakeman-report:
